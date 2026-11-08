@@ -1,14 +1,11 @@
 /**
- * Public owner contact information. Supply verified owner-approved details before launch.
- * Do not put API tokens, passwords, or private data in this file.
+ * KESTA owner's PUBLIC, verified, explicitly approved contact details only.
+ * Never place the external market-reference listing publisher's phone/Line here.
+ * Nothing is displayed until the owner actually supplies the information.
  */
 export type ContactChannel = {
   id: "phone" | "viber" | "messenger" | "line" | "email";
   label: string;
   href: string;
 };
-
-export const ownerContactChannels: ContactChannel[] = [
-  // Example after validation:
-  // { id: "email", label: "Email", href: "mailto:verified@example.com" },
-];
+export const ownerContactChannels: ContactChannel[] = [];

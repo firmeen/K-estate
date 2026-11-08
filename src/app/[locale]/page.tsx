@@ -36,7 +36,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4"><path d="M4 16 16 4M6 4h10v10"/></svg>
         </Link>
       </div>
-      <div className="in-view-rise in-view-rise--delay-2 relative overflow-hidden rounded-[23px] bg-[#D9E8E3]">
+      <div className="in-view-rise in-view-rise--delay-2 relative hidden overflow-hidden rounded-[23px] bg-[#D9E8E3] md:block">
         <div className="relative h-[235px] overflow-hidden sm:h-[290px] md:h-[540px]">
           <PropertyArtwork type="condo" className="h-full w-full"/>
           <div className="absolute inset-0 bg-gradient-to-t from-[#0C303A]/65 via-transparent to-transparent"/>

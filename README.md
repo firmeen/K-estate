@@ -1,43 +1,42 @@
-# KESTA · Minimal Property Experience
+# KESTA · Property Discovery · Deep Ocean
 
-KESTA is a **single-owner**, Myanmar-first website for viewing property information in Thailand and finding the property owner's verified public contact channels. The brand name is provisional.
+KESTA is a Myanmar-first static website for exploring Thailand property information and locating **verified KESTA owner contact channels**. The brand remains provisional.
 
-## Scope
+## Current content and ownership
 
-1. **Property discovery:** read-only catalogue, sale/rent choice, search by title/location/description, province and property-type filters, property details, photographs (when supplied), price in THB, area and relevant specifications.
-2. **Direct contact:** only channels explicitly provided and approved by the owner (phone, Viber, Messenger, LINE or email).
+The public catalogue now uses **five factual market-reference records** drawn from:
+- [PropertyHub](https://propertyhub.in.th/) — Noble Around Sukhumvit 33, The Link Sukhumvit 50, Bangna–Trad Soi 14 land, The Metropolis Samrong
+- [Thailand Property](https://www.thailand-property.com/apartments-for-rent/bangkok?sort=min_price) — UTD Aries Residence studio
 
-No sign-in, admin dashboard, booking, payment, message storage or backend.
+Each record retains the source URL and a source-reference date (2026-11-08). **They are not owned, marketed, or offered by KESTA.** Current prices, availability, listing accuracy and conditions must be confirmed through each publisher. No third-party property photographs were copied.
 
-## V2 design system — Sea Current
+Visuals use Unsplash-licensed **illustrative architecture/interior photography** delivered from `images.unsplash.com` and are explicitly described as not depicting those individual listings. Unsplash photo IDs: `1600607687920-4e2a09cf159d`, `1618221195710-dd6b41faaea6`, `1500382017468-9049fed747ef`, `1534655610770-dd69616f05ff`, `1523217582562-09d0def993a6`. See the [Unsplash License](https://unsplash.com/license).
 
-- **Off-White:** `#F7F6F2` · **Deep Sea:** `#102F38`
-- Sea Glass `#A8C5BF`, Sea Mist `#DCE6E3`, Ocean hover `#244D57`
-- Semantic colors, typography, spacing, focus, cards and button styles are in `src/app/globals.css`.
-- Typography: DM Sans / Noto Sans Thai / Noto Sans Myanmar **font stacks** with reliable system fallbacks. No external runtime font request. Fonts can be self-hosted later if approved assets are supplied.
-- Motion: restrained CSS hover/reveal + the already installed Motion for React for list transitions; respects reduced-motion preferences.
-- Navigation: just Properties and Contact; logo returns Home. Mobile uses a compact two-destination bottom navigation with safe-area padding.
-- Legacy `/buy`, `/rent`, and `/about` routes remain accessible but are not primary navigation items.
+Future verified owner-owned inventory should replace external references; **never relabel external records as KESTA inventory**.
+
+## Contact
+
+`src/content/owner-contact.ts` is the only public contact configuration. It remains empty until the owner provides explicit consent for verified Phone/Viber/Messenger/LINE/Email details. The UI shows an honest unavailable state; third-party listing contacts are never copied as KESTA contacts. Each external listing links to its original publisher.
+
+## Visual system
+
+- Off-white `#F7F6F2`
+- Navy Deep Ocean `#071F37`, Ocean Blue `#0C3857`, Marine accent `#236589`
+- Light-blue surfaces `#D7E5ED`, `#F0F5F8`
+- **No green/teal primary color.**
+- Semantic tokens in `src/app/globals.css`, compact responsive top/bottom navigation, minimal editorial pages and Sea Current restrained motion.
 
 ## Routes
 
-- `/` — Myanmar-first Home (also available at `/my/`)
-- `/[locale]/properties/` — searchable inventory
-- `/[locale]/properties/[slug]/` — read-only property detail
-- `/[locale]/contact/` — owner-approved contact channels
-- `/[locale]/buy/`, `/[locale]/rent/`, `/[locale]/about/` — legacy compatibility
+- `/` and `/my/`: Myanmar-first home
+- `/[locale]/properties/`: search + filters by sale/rent, type and province
+- `/[locale]/properties/[slug]/`: source-linked details, images, price and specs
+- `/[locale]/contact/`: owner-approved contact channels
+- Legacy `/buy/`, `/rent/`, `/about/` preserved, not primary nav.
 
-Locales: `my` (default), `th`, `en`. Locale switching maintains the current page path.
+Supported locales: Myanmar, Thai, English.
 
-## Content and authenticity
-
-- `src/content/demo-properties.ts` contains clearly labelled **fictional demo** listings. None represents actual available inventory.
-- `src/content/owner-contact.ts` is the sole location for **verified, approved public contact details**; it currently has no channels. The Contact page displays an honest unavailable state.
-- Real property photos must be explicitly supplied for their matching listings. Missing photos use a minimal fallback without pretending to show a real property.
-- `src/server/properties/service.ts` stays a static read-only data adapter. The site deliberately remains static, with no server API.
-- Preview no-index and robots protections remain in place until listings are verified.
-
-## Run
+## Development
 
 ```bash
 npm ci
@@ -45,16 +44,8 @@ npm run dev
 npm run check
 ```
 
-Local site: `http://localhost:3000/`.
+## Deployment
 
-## GitHub Pages
+Static Next.js export to `https://firmeen.github.io/K-estate/`. Conditional `GITHUB_PAGES=true` controls `/K-estate` basePath; `images.unsplash.com` is an allowed unoptimized image source. No runtime server or third-party messaging integrations. GitHub Actions workflows and dependencies are unchanged.
 
-Production path: `https://firmeen.github.io/K-estate/`.
-
-`next.config.ts` preserves `output: "export"`, trailing slashes, and the conditional `/K-estate` base path when `GITHUB_PAGES=true`. For root-local property imagery, the same configuration exposes `NEXT_PUBLIC_BASE_PATH` during the build.
-
-Existing GitHub Actions workflows and repository settings are unchanged by V2.
-
-## Release checklist
-
-Replace fictional inventory, review property types/units, attach owner-provided photographs, confirm public contact channels, verify native Myanmar/Thai copy, test small-screen Safari and laptop layouts, check keyboard/reduced-motion behavior, confirm performance, and clear brand/trademark decisions before removing preview no-index restrictions.
+The site remains `noindex` while reference information is being used. Before enabling indexing, replace with owner-approved inventory, photos and contacts, and review Myanmar translations and legal disclosures.

@@ -78,4 +78,21 @@ export const demoProperties: Property[] = [
     imageIsIllustrative:true,
     source:{provider:"Thailand Property",url:"https://www.thailand-property.com/apartments-for-rent/bangkok?sort=min_price",checkedAt:"2026-11-08"},
   },
+  {
+    id:"ref-metropolis-samrong",
+    slug:"metropolis-samrong-interchange-rent",
+    title:{en:"The Metropolis Samrong · 1 Bedroom",th:"The Metropolis สำโรง · 1 ห้องนอน",my:"The Metropolis Samrong · အိပ်ခန်း ၁ ခန်း"},
+    description:{
+      en:"Public rental listing for a 35 m² one-bedroom, one-bathroom condominium on floor 11 of The Metropolis Samrong Interchange, Mueang Samut Prakan. Price and features should be confirmed with the original source.",
+      th:"ข้อมูลจากประกาศเช่าคอนโด The Metropolis Samrong Interchange อำเภอเมืองสมุทรปราการ ห้องขนาด 35 ตร.ม. ชั้น 11 มี 1 ห้องนอน 1 ห้องน้ำ โปรดตรวจสอบรายละเอียดกับเว็บไซต์ต้นทาง",
+      my:"စမွတ်ပရာကန် Mueang Samut Prakan ရှိ The Metropolis Samrong Interchange ကွန်ဒို၏ ပြင်ပငှားရမ်းကြော်ငြာမှ အချက်အလက်ဖြစ်သည်။ ၁၁ လွှာ၊ 35 m²၊ အိပ်ခန်း ၁ ခန်းနှင့် ရေချိုးခန်း ၁ ခန်း ပါဝင်သည်။",
+    },
+    location:{en:"Samut Prakan",th:"สมุทรปราการ",my:"စမွတ်ပရာကန်"},
+    district:{en:"Mueang Samut Prakan · Samrong",th:"เมืองสมุทรปราการ · สำโรง",my:"Mueang Samut Prakan · Samrong"},
+    provinceCode:"11",type:"condo",listingMode:"rent",status:"reference",
+    priceTHB:11500,areaSqm:35,bedrooms:1,bathrooms:1,floor:11,
+    images:["https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1280&q=78"],
+    imageIsIllustrative:true,
+    source:{provider:"PropertyHub",url:"https://propertyhub.in.th/en/listings/for-rent-condo-the-metropolis-samrong-interchange-building-a-floor-11-1-bed-room-room-size-35-sqm--b5660a35---4488507",checkedAt:"2026-11-08"},
+  },
 ];

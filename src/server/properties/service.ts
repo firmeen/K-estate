@@ -2,12 +2,10 @@ import "server-only";
 import { demoProperties } from "@/content/demo-properties";
 import type { Property } from "@/types/property";
 
-// This service is the read-side boundary. Replace with a database repository
-// once the owner provides real property records and storage credentials.
+/** Static, read-only entries; reference records are never treated as KESTA-owned stock. */
 export async function listPublicProperties(): Promise<Property[]> {
-  return demoProperties.filter((item) => item.status === "available");
+  return demoProperties.filter(item => item.status === "available" || item.status === "reference");
 }
-
 export async function getPublicProperty(slug: string): Promise<Property | null> {
-  return (await listPublicProperties()).find((item) => item.slug === slug) ?? null;
+  return (await listPublicProperties()).find(item => item.slug === slug) ?? null;
 }

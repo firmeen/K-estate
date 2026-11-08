@@ -15,25 +15,25 @@ export async function generateStaticParams() {
   const properties = await listPublicProperties();
   return properties.flatMap(property => locales.map(locale => ({ locale, slug:property.slug })));
 }
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale,slug } = await params;
   if (!isLocale(locale)) return {};
   const property = await getPublicProperty(slug);
-  return { title: property?.title[locale] ?? "Property", robots:{ index:false, follow:false } };
+  return { title: property?.title[locale] ?? "Property", robots:{index:false,follow:false} };
 }
 
 function Specifications({ property, locale }: { property: Property; locale: "my" | "th" | "en" }) {
   const t = getDictionary(locale);
   const ui = getUICopy(locale);
-  const rows = [
+  const rows: [string, string][] = [
     [ui.detailType,t.types[property.type]],
     [ui.detailListing,property.listingMode === "sale" ? ui.forSale : ui.forRent],
     [ui.detailArea,`${property.areaSqm.toLocaleString("en-US")} m²`],
-    ...(property.landAreaSqm !== undefined && property.type === "house" ? [[ui.detailLand,`${property.landAreaSqm.toLocaleString("en-US")} m²`]] : []),
-    ...(property.floor !== undefined && property.type === "condo" ? [[ui.detailFloor,String(property.floor)]] : []),
-    ...(property.type !== "land" && property.bedrooms !== undefined && property.bedrooms > 0 ? [[ui.detailBed,String(property.bedrooms)]] : []),
-    ...(property.type !== "land" && property.bathrooms !== undefined && property.bathrooms > 0 ? [[ui.detailBath,String(property.bathrooms)]] : []),
+    ...(property.landAreaSquareWa !== undefined ? [[ui.detailLand,`${property.landAreaSquareWa} ${ui.squareWah}`] as [string,string]] : []),
+    ...(property.landAreaSqm !== undefined && property.type === "house" ? [[ui.detailLand,`${property.landAreaSqm.toLocaleString("en-US")} m²`] as [string,string]] : []),
+    ...(property.floor !== undefined && property.type === "condo" ? [[ui.detailFloor,String(property.floor)] as [string,string]] : []),
+    ...(property.type !== "land" && property.bedrooms !== undefined && property.bedrooms > 0 ? [[ui.detailBed,String(property.bedrooms)] as [string,string]] : []),
+    ...(property.type !== "land" && property.bathrooms !== undefined && property.bathrooms > 0 ? [[ui.detailBath,String(property.bathrooms)] as [string,string]] : []),
   ];
   return <section className="mt-9" aria-labelledby="property-specifications">
     <h2 id="property-specifications" className="section-title">{ui.detailDetails}</h2>
@@ -45,7 +45,6 @@ function Specifications({ property, locale }: { property: Property; locale: "my"
     </dl>
   </section>;
 }
-
 export default async function PropertyDetailPage({ params }: Props) {
   const { locale,slug } = await params;
   if (!isLocale(locale)) notFound();
@@ -61,7 +60,6 @@ export default async function PropertyDetailPage({ params }: Props) {
       <span aria-hidden="true">/</span>
       <span aria-current="page" className="max-w-[60vw] truncate text-[var(--color-deep-sea)]">{property.title[locale]}</span>
     </nav>
-
     <header className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
       <div className="max-w-[750px]">
         <p className="eyebrow">{t.types[property.type]} · {isRent ? ui.forRent : ui.forSale}</p>
@@ -77,8 +75,7 @@ export default async function PropertyDetailPage({ params }: Props) {
         </p>
       </div>
     </header>
-
-    <PropertyGallery images={property.images} title={property.title[locale]} locale={locale}/>
+    <PropertyGallery images={property.images} title={property.title[locale]} locale={locale} illustrative={property.imageIsIllustrative}/>
 
     <div className="mt-9 grid gap-10 md:mt-12 md:grid-cols-[minmax(0,1.65fr)_minmax(270px,1fr)] md:gap-14">
       <div className="min-w-0">
@@ -93,17 +90,27 @@ export default async function PropertyDetailPage({ params }: Props) {
           </p>
         </section>
         <Specifications property={property} locale={locale}/>
-        {property.isDemo && <div className="notice mt-8">{ui.demoNote}</div>}
+        {property.source && <div className="notice mt-8">
+          <p>{ui.sourceDisclaimer}</p>
+          <p className="mt-2 text-xs">{ui.referenceSource}: {property.source.provider} · {ui.referenceChecked}: {property.source.checkedAt}</p>
+        </div>}
       </div>
 
       <aside className="h-fit rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:sticky md:top-[100px] md:p-7">
-        <p className="eyebrow">{ui.detailContact}</p>
+        <p className="eyebrow">{property.source ? ui.referenceSource : ui.detailContact}</p>
         <h2 className="mt-3 text-xl font-medium leading-[1.55]">{property.title[locale]}</h2>
         <p className="mt-2 text-[.83rem] text-[var(--color-text-secondary)]">{ui.reference}: {property.id}</p>
         <div className="mt-6 border-t border-[var(--color-border)] pt-5">
-          {ownerContactChannels.length && !property.isDemo
-            ? <Link href={`/${locale}/contact`} className="button-primary w-full">{ui.detailContact} <span aria-hidden="true">↗</span></Link>
-            : <p className="text-[.88rem] leading-7 text-[var(--color-text-secondary)]">{ui.detailContactUnavailable}</p>}
+          {property.source
+            ? <>
+                <p className="mb-5 text-sm leading-7 text-[var(--color-text-secondary)]">{ui.externalContact}</p>
+                <a href={property.source.url} target="_blank" rel="noopener noreferrer" className="button-primary w-full">
+                  {ui.viewOriginal} <span aria-hidden="true">↗</span>
+                </a>
+              </>
+            : ownerContactChannels.length
+              ? <Link href={`/${locale}/contact`} className="button-primary w-full">{ui.detailContact} <span aria-hidden="true">↗</span></Link>
+              : <p className="text-[.88rem] leading-7 text-[var(--color-text-secondary)]">{ui.detailContactUnavailable}</p>}
         </div>
       </aside>
     </div>

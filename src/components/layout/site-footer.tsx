@@ -17,7 +17,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       </nav>
     </div>
     <div className="container-width mt-7 border-t border-[var(--color-border)] pt-4 text-xs text-[var(--color-text-secondary)]">
-      {ui.sample}
+      {ui.sourceDisclaimer}
     </div>
   </footer>;
 }

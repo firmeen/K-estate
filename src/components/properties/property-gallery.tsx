@@ -6,10 +6,11 @@ import type { Locale } from "@/i18n/config";
 import { getUICopy } from "@/i18n/dictionaries";
 import { PropertyMedia } from "./property-media";
 
-export function PropertyGallery({ images, title, locale }: {
+export function PropertyGallery({ images, title, locale, illustrative = false }: {
   images: string[];
   title: string;
   locale: Locale;
+  illustrative?: boolean;
 }) {
   const ui = getUICopy(locale);
   const gallery = useRef<HTMLDivElement>(null);
@@ -37,21 +38,21 @@ export function PropertyGallery({ images, title, locale }: {
         className="flex snap-x snap-mandatory overflow-x-auto rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label={ui.galleryCount}>
         {photos.map((src,index) => <div key={`${src}-${index}`} className="relative aspect-[4/3] w-full shrink-0 snap-start">
-          <PropertyMedia src={src} alt={`${title} — ${ui.galleryCount} ${index+1}`} placeholder={ui.noImage} priority={index===0} sizes="100vw"/>
+          <PropertyMedia src={src} alt={illustrative ? ui.photoAlt : `${title} — ${ui.galleryCount} ${index+1}`} placeholder={ui.noImage} priority={index===0} sizes="100vw"/>
         </div>)}
       </div>
     </div>
 
     <div className={`hidden gap-3 md:grid ${photos.length > 1 ? "md:grid-cols-[2fr_1fr]" : "md:grid-cols-1"}`}>
       <div className="relative aspect-[16/10] max-h-[510px] overflow-hidden rounded-[16px] bg-[var(--color-sea-mist)]">
-        <PropertyMedia src={photos[active]} alt={`${title} — ${ui.galleryCount} ${active+1}`} placeholder={ui.noImage} priority sizes="(max-width: 1200px) 65vw, 850px"/>
+        <PropertyMedia src={photos[active]} alt={illustrative ? ui.photoAlt : `${title} — ${ui.galleryCount} ${active+1}`} placeholder={ui.noImage} priority sizes="(max-width: 1200px) 65vw, 850px"/>
       </div>
       {photos.length > 1 && <div className="grid grid-rows-2 gap-3">
         {photos.slice(1,3).map((src,index) => <button key={`${src}-${index}`} type="button" onClick={()=>select(index+1)}
           aria-label={`${ui.galleryCount} ${index+2}`}
           aria-pressed={active===index+1}
           className={`relative min-h-0 overflow-hidden rounded-[14px] bg-[var(--color-sea-mist)] focus-visible:outline-offset-[-3px] ${active === index+1 ? "ring-2 ring-[var(--color-focus)]" : ""}`}>
-          <PropertyMedia src={src} alt={`${title} — ${ui.galleryCount} ${index+2}`} placeholder={ui.noImage} sizes="(max-width: 1200px) 30vw, 400px"/>
+          <PropertyMedia src={src} alt={illustrative ? ui.photoAlt : `${title} — ${ui.galleryCount} ${index+2}`} placeholder={ui.noImage} sizes="(max-width: 1200px) 30vw, 400px"/>
         </button>)}
         {photos.length===2 && <div className="grid place-items-center rounded-[14px] bg-[var(--color-surface-muted)] text-sm text-[var(--color-text-secondary)]">
           {ui.galleryCount} 2 / 2
@@ -70,5 +71,6 @@ export function PropertyGallery({ images, title, locale }: {
           className="grid h-11 w-11 place-items-center rounded-full border border-[var(--color-border)] transition-colors hover:bg-[var(--color-surface-muted)] disabled:opacity-40">→</button>
       </div>}
     </div>
+    {illustrative && <p className="mt-3 max-w-3xl text-xs leading-6 text-[var(--color-text-secondary)]">{ui.photoDisclaimer}</p>}
   </section>;
 }

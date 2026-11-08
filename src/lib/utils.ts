@@ -12,5 +12,5 @@ export function formatTHB(amount: number): string {
 /** Next/Image in unoptimized static export does not automatically rewrite root-local image src. */
 export function propertyImageSrc(src: string): string {
   if (!src.startsWith("/") || src.startsWith("//")) return src;
-  return `${process.env.GITHUB_PAGES === "true" ? "/K-estate" : ""}${src}`;
+  return `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${src}`;
 }

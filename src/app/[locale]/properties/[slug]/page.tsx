@@ -101,7 +101,7 @@ export default async function PropertyDetailPage({ params }: Props) {
         <h2 className="mt-3 text-xl font-medium leading-[1.55]">{property.title[locale]}</h2>
         <p className="mt-2 text-[.83rem] text-[var(--color-text-secondary)]">{ui.reference}: {property.id}</p>
         <div className="mt-6 border-t border-[var(--color-border)] pt-5">
-          {ownerContactChannels.length
+          {ownerContactChannels.length && !property.isDemo
             ? <Link href={`/${locale}/contact`} className="button-primary w-full">{ui.detailContact} <span aria-hidden="true">↗</span></Link>
             : <p className="text-[.88rem] leading-7 text-[var(--color-text-secondary)]">{ui.detailContactUnavailable}</p>}
         </div>

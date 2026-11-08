@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import type { Locale } from "@/i18n/config";
 import { getDictionary, getUICopy } from "@/i18n/dictionaries";
@@ -17,20 +16,25 @@ export function PropertyExplorer({ locale, properties, initialMode = "all" }: {
 }) {
   const ui = getUICopy(locale);
   const t = getDictionary(locale);
-  const params = useSearchParams();
-  const queryFromUrl = (params.get("q") ?? "").slice(0,120);
-  const modeParam = params.get("mode");
-  const modeFromUrl: Mode = modeParam === "sale" || modeParam === "rent" ? modeParam : initialMode;
-  const [query, setQuery] = useState(queryFromUrl);
-  const [mode, setMode] = useState<Mode>(modeFromUrl);
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [type, setType] = useState<PropertyType | "all">("all");
   const [province, setProvince] = useState("all");
   const reduceMotion = useReducedMotion();
 
+  // Read URL filters after hydration: static export can render the initial
+  // catalogue immediately without a Suspense/CSR-only shell.
   useEffect(() => {
-    setQuery(queryFromUrl);
-    setMode(modeFromUrl);
-  }, [queryFromUrl, modeFromUrl]);
+    function syncQuery() {
+      const url = new URLSearchParams(window.location.search);
+      const requested = url.get("mode");
+      setQuery((url.get("q") ?? "").slice(0, 120));
+      setMode(requested === "sale" || requested === "rent" ? requested : initialMode);
+    }
+    syncQuery();
+    window.addEventListener("popstate", syncQuery);
+    return () => window.removeEventListener("popstate", syncQuery);
+  }, [initialMode]);
 
   const types = useMemo(() => [...new Set(properties.map(item => item.type))], [properties]);
   const provinces = useMemo(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 import type { Locale } from "@/i18n/config";
 import { getUICopy } from "@/i18n/dictionaries";
 import { PropertyMedia } from "./property-media";
@@ -13,6 +14,7 @@ export function PropertyGallery({ images, title, locale }: {
   const ui = getUICopy(locale);
   const gallery = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const reduceMotion = useReducedMotion();
   const photos = images.filter(Boolean);
 
   if (!photos.length) return <div className="relative mt-7 aspect-[4/3] max-h-[520px] overflow-hidden rounded-[16px] bg-[var(--color-sea-mist)] sm:aspect-[16/9]">
@@ -22,7 +24,7 @@ export function PropertyGallery({ images, title, locale }: {
   function select(next: number) {
     const index = Math.min(Math.max(next, 0), photos.length - 1);
     setActive(index);
-    gallery.current?.scrollTo({ left: index * gallery.current.clientWidth, behavior:"smooth" });
+    gallery.current?.scrollTo({ left: index * gallery.current.clientWidth, behavior:reduceMotion ? "auto" : "smooth" });
   }
   function onScroll() {
     const node = gallery.current;

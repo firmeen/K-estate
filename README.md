@@ -1,53 +1,52 @@
-# KESTA — Thailand real estate for Myanmar visitors
+# KESTA — Thailand properties for Myanmar visitors
 
-A single-owner real estate catalogue for condos, apartments, land and houses offered for sale or rent in Thailand. **KESTA is a working brand placeholder**, not a cleared trademark or domain.
+A single-owner real-estate catalogue and contact website. The navigation is intentionally focused on two user jobs:
 
-## Technology baseline
-Copied and version-aligned from [FLOW-info](https://github.com/firmeen/FLOW-info) main: Next.js 16.3.1, React 19.2.8, TypeScript 5, Tailwind 4, shadcn, Base UI, Motion 13.1.0, Remix Icon and related tooling. `package-lock.json` is copied from the same repository and adjusted only for package name.
+1. **Explore properties** — view property location, area, type, sale/rent price and details.
+2. **Contact the owner** — see verified owner-approved channels, when provided.
 
-Unlike FLOW-info, this application does **not** use `output: "export"` because future owner-only administration, authentication, and database operations require server capabilities.
+**KESTA is a provisional brand name; trademark and domain availability have not been cleared.**
 
-## Run locally
+## Live site / deployment
+Designed for GitHub Pages at `https://firmeen.github.io/K-estate/`. The project uses Next.js static export and a conditional `basePath: "/K-estate"` in GitHub Actions. Set **Settings → Pages → Build and deployment → Source: GitHub Actions** to enable the deployment workflow.
+
+The `Deploy KESTA to GitHub Pages` workflow builds on pushes to `main`, runs `npm run check`, and publishes `out/`. Local development does not use the GitHub Pages prefix.
+
+## Stack
+Mirrors FLOW-info's dependency versions: Next.js 16.3.1, React 19.2.8, TypeScript 5, Tailwind CSS 4, shadcn, Base UI, Motion 13.1.0, Remix Icon.
+
+## Local usage
 ```bash
 npm ci
 npm run dev
 ```
-Open http://localhost:3000 — the root redirects to `/my`.
+Visit http://localhost:3000/ (Myanmar landing page) or http://localhost:3000/my/.
 
 ```bash
 npm run check
 ```
+To test the GitHub Pages build locally: `GITHUB_PAGES=true npm run build` (PowerShell: `$env:GITHUB_PAGES="true"; npm run build`).
 
-## Routes
-- `/` → `/my`
-- `/[locale]` — landing page
-- `/[locale]/properties` — catalogue with client-side filters
-- `/[locale]/buy` and `/[locale]/rent` — sale/rent catalogue
-- `/[locale]/properties/[slug]` — property detail
-- `/[locale]/about` and `/[locale]/contact` — content pages
+## Visitor routes
+- `/` and `/my/` — Myanmar landing pages
+- `/[locale]/properties/` — catalogue, filters for sale/rent/type/province and free-text search
+- `/[locale]/properties/[slug]/` — property overview, area, price, location and contact CTA
+- `/[locale]/contact/` — verified contact channels
+- `/[locale]/buy/`, `/[locale]/rent/`, `/[locale]/about/` — legacy URLs retained but not shown as primary navigation
 
-`locale` is `my` (default), `th` or `en`. Use locale-aware URLs for every navigation link.
+Locales: `my` (default), `th`, `en`. Desktop primary nav: **Properties / Contact**. Mobile: compact bottom two-item tab bar.
 
-## Source structure
-```text
-src/
-  app/                 # Next.js App Router pages and layouts
-    [locale]/           # language-specific public pages
-  components/
-    layout/             # shared header/footer
-    properties/         # reusable catalogue/search/cards
-  content/              # clearly labelled fictional demo listings
-  i18n/                 # language dictionaries + locale definitions
-  lib/                  # formatting helpers
-  server/properties/    # future persistence adapter/service boundary
-  types/                # typed property data model
-```
+## Information source
+- `src/content/demo-properties.ts`: fictional demo data labelled as examples, **not real listings**.
+- `src/content/owner-contact.ts`: verified contact channels. This is currently empty until real information is supplied.
+- `src/server/properties/service.ts`: read-only catalogue data adapter.
 
-## Before a real launch
-1. Replace mock listings with verified owner data and property images.
-2. Confirm Burmese translations, real owner contact channels and brand availability.
-3. Connect persistent storage and photo uploads.
-4. Add secure owner-only sign-in, authorization, validation, and audited property mutations.
-5. Complete accessibility, SEO, deployment, and legal-content review (including appropriate foreign ownership / rental claims).
+## Scope
+No login, admin dashboard, reservations, payment processing, image uploads or live database. Those are explicitly deferred. GitHub Pages is static hosting, so future dynamic server-side features would require a separate backend or a new host.
 
-**Do not treat demo listings as actual available properties.** No database, admin login or payment processing is implemented in the foundation.
+## Before launching publicly
+- Replace mock inventory and placeholder imagery with verified owner-provided records, images and precise location details.
+- Obtain owner-approved phone/Viber/Messenger/LINE URLs or other channels and populate `src/content/owner-contact.ts`.
+- Have native Myanmar speakers check wording and readability; test on real mobile devices.
+- Review brand availability, accessibility, legal disclosures and appropriate foreign-property ownership claims.
+- Replace preview-only `robots` noindex/disallow restrictions after actual content is approved.

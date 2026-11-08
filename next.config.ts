@@ -1,9 +1,15 @@
 import type { NextConfig } from "next";
 
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
+
+// Public property catalogue + contact pages only: fully static, no server runtime.
+// GitHub Pages project sites are hosted under /K-estate; local development stays at /.
 const nextConfig: NextConfig = {
-  // Unlike FLOW-info's static export, KESTA needs server capabilities
-  // for a future authenticated owner dashboard and database.
   reactStrictMode: true,
+  output: "export",
+  trailingSlash: true,
+  images: { unoptimized: true },
+  ...(isGitHubPages ? { basePath: "/K-estate" } : {}),
 };
 
 export default nextConfig;

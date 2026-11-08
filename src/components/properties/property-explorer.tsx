@@ -1,100 +1,117 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { motion, useReducedMotion } from "motion/react";
 import type { Locale } from "@/i18n/config";
-import { getDictionary } from "@/i18n/dictionaries";
+import { getDictionary, getUICopy } from "@/i18n/dictionaries";
 import type { ListingMode, Property, PropertyType } from "@/types/property";
 import { PropertyCard } from "./property-card";
 
-type FilterValue = ListingMode | "all";
+type Mode = ListingMode | "all";
 
 export function PropertyExplorer({ locale, properties, initialMode = "all" }: {
   locale: Locale;
   properties: Property[];
-  initialMode?: FilterValue;
+  initialMode?: Mode;
 }) {
+  const ui = getUICopy(locale);
   const t = getDictionary(locale);
-  const [search, setSearch] = useState("");
-  const [mode, setMode] = useState<FilterValue>(initialMode);
+  const params = useSearchParams();
+  const queryFromUrl = (params.get("q") ?? "").slice(0,120);
+  const modeParam = params.get("mode");
+  const modeFromUrl: Mode = modeParam === "sale" || modeParam === "rent" ? modeParam : initialMode;
+  const [query, setQuery] = useState(queryFromUrl);
+  const [mode, setMode] = useState<Mode>(modeFromUrl);
   const [type, setType] = useState<PropertyType | "all">("all");
   const [province, setProvince] = useState("all");
+  const reduceMotion = useReducedMotion();
 
+  useEffect(() => {
+    setQuery(queryFromUrl);
+    setMode(modeFromUrl);
+  }, [queryFromUrl, modeFromUrl]);
+
+  const types = useMemo(() => [...new Set(properties.map(item => item.type))], [properties]);
   const provinces = useMemo(() => {
     const names = new Map<string,string>();
-    for (const property of properties) names.set(property.provinceCode, property.location[locale]);
-    return [...names.entries()].sort((a,b) => a[1].localeCompare(b[1]));
+    properties.forEach(item => names.set(item.provinceCode,item.location[locale]));
+    return [...names.entries()].sort((a,b)=>a[1].localeCompare(b[1]));
   }, [properties,locale]);
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLocaleLowerCase();
-    return properties.filter(property =>
-      (mode === "all" || property.listingMode === mode) &&
-      (type === "all" || property.type === type) &&
-      (province === "all" || property.provinceCode === province) &&
-      (!query || [property.title[locale],property.location[locale],property.description[locale]]
-        .some(value => value.toLocaleLowerCase().includes(query)))
+  const results = useMemo(() => {
+    const term = query.trim().toLocaleLowerCase();
+    return properties.filter(item =>
+      (mode === "all" || item.listingMode === mode) &&
+      (type === "all" || item.type === type) &&
+      (province === "all" || item.provinceCode === province) &&
+      (!term || [item.title[locale],item.location[locale],item.district?.[locale],item.description[locale]]
+        .filter((value): value is string => typeof value === "string")
+        .some(value => value.toLocaleLowerCase().includes(term)))
     );
-  }, [search,mode,type,province,properties,locale]);
+  }, [properties,mode,type,province,query,locale]);
 
-  const changed = search !== "" || mode !== initialMode || type !== "all" || province !== "all";
-  function reset() { setSearch(""); setMode(initialMode); setType("all"); setProvince("all"); }
-  const title = initialMode === "sale" ? t.catalog.buyTitle : initialMode === "rent" ? t.catalog.rentTitle : t.catalog.title;
+  const changed = query.trim() !== "" || mode !== initialMode || type !== "all" || province !== "all";
+  function clear() { setQuery("");setMode(initialMode);setType("all");setProvince("all"); }
+  const tabs: { value: Mode; label: string }[] = [
+    { value:"all", label:ui.all },{ value:"sale", label:ui.buy },{ value:"rent", label:ui.rent },
+  ];
+  const heading = initialMode === "sale" ? t.catalog.buyTitle : initialMode === "rent" ? t.catalog.rentTitle : ui.listingTitle;
+  return <div className="container-width pt-10 pb-12 md:pt-16 md:pb-20">
+    <div className="sea-reveal max-w-3xl">
+      <p className="eyebrow">{ui.collectionTag}</p>
+      <h1 className="page-title mt-3">{heading}</h1>
+      <p className="body-copy mt-3 text-[.95rem] md:text-base">{ui.listingDesc}</p>
+    </div>
 
-  return <div className="container-width py-12 md:py-20">
-    <p className="eyebrow">{t.catalog.eyebrow}</p>
-    <h1 className="page-heading mt-4 max-w-3xl">{title}</h1>
-    <p className="mt-4 max-w-2xl leading-7 text-[#64766a]">{t.catalog.description}</p>
-
-    <section aria-label={t.catalog.mode} className="mt-10">
-      <div className="flex max-w-full flex-wrap items-center gap-2">
-        {([
-          { value:"all", label:t.catalog.allModes },
-          { value:"sale", label:t.common.sale },
-          { value:"rent", label:t.common.rent },
-        ] as const).map(option => (
-          <button key={option.value} type="button" aria-pressed={mode === option.value}
-            onClick={() => setMode(option.value)}
-            className={`min-h-11 rounded-full border px-5 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#55856c] ${mode === option.value ? "border-[#204a39] bg-[#204a39] text-white" : "border-[#cddcd0] bg-white text-[#496356] hover:bg-[#edf3ed]"}`}>
-            {option.label}
-          </button>
-        ))}
+    <section className="mt-8 md:mt-10" aria-label={ui.filters}>
+      <div role="group" aria-label={t.catalog.mode} className="flex flex-wrap items-center gap-2">
+        {tabs.map(tab => <button key={tab.value} type="button" aria-pressed={mode === tab.value} onClick={()=>setMode(tab.value)}
+          className={`min-h-11 rounded-full border px-5 text-sm font-medium transition-colors duration-150 active:translate-y-px ${mode === tab.value ? "border-[var(--color-deep-sea)] bg-[var(--color-deep-sea)] text-white" : "border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)]"}`}>
+          {tab.label}
+        </button>)}
       </div>
-    </section>
-
-    <section aria-label={t.catalog.search} className="mt-6 rounded-2xl border border-[#e0e7de] bg-[#edf2ed] p-4 md:p-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
-        <label className="block">
-          <span className="mb-2 block text-xs font-semibold">{t.catalog.search}</span>
-          <input className="input-field" type="search" placeholder={t.catalog.search}
-            value={search} onChange={event=>setSearch(event.target.value)} />
+      <div className="mt-5 grid gap-4 rounded-2xl bg-[var(--color-surface-muted)] p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-[1.45fr_1fr_1fr]">
+        <label className="block min-w-0">
+          <span className="mb-2 block text-[.8rem] font-medium">{ui.searchLabel}</span>
+          <input className="input-field" type="search" value={query} maxLength={120}
+            onChange={event=>setQuery(event.target.value)} placeholder={ui.searchPlaceholder}/>
         </label>
-        <label className="block">
-          <span className="mb-2 block text-xs font-semibold">{t.catalog.location}</span>
+        <label className="block min-w-0">
+          <span className="mb-2 block text-[.8rem] font-medium">{ui.locationLabel}</span>
           <select className="input-field" value={province} onChange={event=>setProvince(event.target.value)}>
-            <option value="all">{t.catalog.allLocations}</option>
+            <option value="all">{ui.allLocations}</option>
             {provinces.map(([code,name])=><option key={code} value={code}>{name}</option>)}
           </select>
         </label>
-        <label className="block">
-          <span className="mb-2 block text-xs font-semibold">{t.catalog.type}</span>
+        <label className="block min-w-0">
+          <span className="mb-2 block text-[.8rem] font-medium">{ui.typeLabel}</span>
           <select className="input-field" value={type} onChange={event=>setType(event.target.value as PropertyType | "all")}>
-            <option value="all">{t.catalog.allTypes}</option>
-            {(["condo","apartment","land","house"] as const).map(value => <option key={value} value={value}>{t.types[value]}</option>)}
+            <option value="all">{ui.allTypes}</option>
+            {types.map(value => <option key={value} value={value}>{t.types[value]}</option>)}
           </select>
         </label>
       </div>
     </section>
 
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-      <p aria-live="polite" className="text-sm font-medium text-[#526e5d]">{filtered.length} {t.catalog.results}</p>
-      {changed && <button type="button" onClick={reset} className="min-h-11 rounded-full border border-[#bfcfbe] bg-white px-4 text-sm font-medium text-[#376849] hover:bg-[#eef3eb]">{t.catalog.clearFilters}</button>}
+    <div className="mt-7 flex min-h-11 flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
+      <p aria-live="polite" aria-atomic="true" className="text-sm font-medium text-[var(--color-text-secondary)]">
+        <span className="font-semibold text-[var(--color-deep-sea)]">{results.length}</span> {ui.results}
+      </p>
+      {changed && <button type="button" className="button-text min-h-11 px-2 text-sm" onClick={clear}>{ui.clear} <span aria-hidden="true">↺</span></button>}
     </div>
 
-    {filtered.length > 0
-      ? <div className="mt-5 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filtered.map(property => <PropertyCard key={property.id} property={property} locale={locale}/>)}
-      </div>
-      : <div className="mt-5 rounded-2xl border border-dashed border-[#c4d3c7] bg-white px-6 py-20 text-center text-[#647669]">{t.catalog.empty}</div>}
-    <p className="mt-7 text-xs text-[#78917e]">{t.common.demo}</p>
+    {results.length
+      ? <motion.div key={results.map(item=>item.id).join("|")} initial={reduceMotion ? false : { opacity:.78,y:5 }}
+          animate={{ opacity:1,y:0 }} transition={{ duration:reduceMotion ? 0 : .2, ease:"easeOut" }}
+          className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+          {results.map(item => <PropertyCard key={item.id} property={item} locale={locale}/>)}
+        </motion.div>
+      : <div className="mt-6 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-14 text-center">
+          <h2 className="text-xl font-medium">{ui.emptyTitle}</h2>
+          <p className="body-copy mx-auto mt-2 text-sm">{ui.emptyDesc}</p>
+          <button type="button" className="button-secondary mt-6" onClick={clear}>{ui.clear}</button>
+        </div>}
+    {properties.some(item=>item.isDemo) && <p className="mt-6 text-xs leading-6 text-[var(--color-text-secondary)]">{ui.sample}</p>}
   </div>;
 }

@@ -1,59 +1,87 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { HomeSearch } from "@/components/home/home-search";
+import { PropertyArtwork } from "@/components/properties/property-artwork";
 import { PropertyCard } from "@/components/properties/property-card";
 import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { getUx } from "@/i18n/ux";
 import { listPublicProperties } from "@/server/properties/service";
+
+function Arrow() {
+  return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4"><path d="M3.5 10h13M11 4.5 16.5 10 11 15.5"/></svg>;
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getDictionary(locale);
+  const u = getUx(locale);
   const properties = await listPublicProperties();
 
   return <>
-    <section className="container-width grid items-center gap-9 py-12 md:grid-cols-[1.05fr_.95fr] md:gap-14 md:py-20">
+    <section className="container-width grid items-center gap-7 pb-12 pt-11 md:grid-cols-[1.08fr_.92fr] md:gap-12 md:pb-20 md:pt-16">
       <div>
-        <p className="eyebrow">{t.home.eyebrow} · THAILAND</p>
-        <h1 className="heading-display mt-6 max-w-[670px]">{t.home.title}</h1>
-        <p className="mt-6 max-w-[540px] text-base leading-8 text-[#65796b] md:text-lg">{t.home.description}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href={`/${locale}/properties`} className="button-primary">{t.nav.explore} <span aria-hidden="true">↗</span></Link>
-          <Link href={`/${locale}/contact`} className="button-outline">{t.nav.contact}</Link>
+        <p className="kicker in-view-rise">{u.kicker}</p>
+        <h1 className="display-heading in-view-rise in-view-rise--delay-1 mt-5 max-w-[660px]">
+          <span className="block">{u.heroTop}</span>
+          <span className="block text-[#35616D]">{u.heroBottom}</span>
+        </h1>
+        <p className="in-view-rise in-view-rise--delay-2 mt-5 max-w-[540px] text-[15px] leading-8 text-[#506B72] md:text-[17px]">{u.heroCopy}</p>
+        <div className="in-view-rise in-view-rise--delay-2">
+          <HomeSearch locale={locale}/>
         </div>
-        <div className="mt-9 flex flex-wrap gap-x-6 gap-y-2 border-t border-[#dde5db] pt-6 text-[11px] font-semibold uppercase tracking-[.10em] text-[#6c8677]">
-          <span>THAILAND</span><span>DIRECT OWNER</span><span>SALE / RENT</span>
-        </div>
+        <Link className="soft-link in-view-rise in-view-rise--delay-3 mt-5" href={`/${locale}/contact`}>
+          {u.contact}
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4"><path d="M4 16 16 4M6 4h10v10"/></svg>
+        </Link>
       </div>
-      <div className="hero-art" role="img" aria-label="Decorative conceptual building illustration">
-        <span className="hero-art-label">KESTA · THAILAND</span>
-        <div className="absolute bottom-5 left-5 z-10 rounded-xl bg-[#f9faf4]/95 px-5 py-4 shadow-sm">
-          <span className="block text-[10px] font-bold tracking-[.14em] text-[#6c8977]">PROPERTY DISCOVERY</span>
-          <strong className="mt-1 block text-xl">Find your place.</strong>
-        </div>
-      </div>
-    </section>
-    <section className="border-t border-[#e1e8df] bg-white py-16 md:py-20">
-      <div className="container-width">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <p className="eyebrow">{t.home.sectionEyebrow}</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-.04em] md:text-5xl">{t.home.sectionTitle}</h2>
-            <p className="mt-4 max-w-xl text-[#677b6e]">{t.home.sectionDescription}</p>
+      <div className="in-view-rise in-view-rise--delay-2 relative overflow-hidden rounded-[23px] bg-[#D9E8E3]">
+        <div className="relative h-[235px] overflow-hidden sm:h-[290px] md:h-[540px]">
+          <PropertyArtwork type="condo" className="h-full w-full"/>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0C303A]/65 via-transparent to-transparent"/>
+          <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-white/50 bg-[#F7F6F2]/88 px-4 py-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#264C55] backdrop-blur-md">KESTA · THAILAND</div>
+          <div className="absolute bottom-6 left-6 right-5 md:bottom-9 md:left-9">
+            <p className="text-[11px] font-semibold tracking-[.18em] text-[#D1E5E1]">SPACES / PLACES / POSSIBILITIES</p>
+            <p className="mt-3 max-w-[400px] text-2xl font-semibold leading-tight tracking-[-.035em] text-white md:text-4xl">A clearer way to find your place.</p>
+            <p className="mt-3 text-xs text-[#D6E5E2]">{u.illustration}</p>
           </div>
-          <Link href={`/${locale}/properties`} className="button-outline">{t.common.viewAll} <span aria-hidden="true">↗</span></Link>
-        </div>
-        <div className="mt-9 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {properties.slice(0,3).map(property => <PropertyCard key={property.id} property={property} locale={locale}/>)}
         </div>
       </div>
     </section>
-    <section className="container-width py-16 md:py-24">
-      <div className="rounded-[22px] bg-[#193e33] px-8 py-12 text-[#f7f8f0] md:px-16 md:py-16">
-        <p className="text-xs font-bold uppercase tracking-[.15em] text-[#a4c8af]">DIRECT CONTACT</p>
-        <h2 className="mt-5 max-w-2xl text-3xl font-semibold tracking-[-.04em] md:text-5xl">{t.contact.title}</h2>
-        <p className="mt-5 max-w-2xl leading-8 text-[#c5d9c9]">{t.contact.text}</p>
-        <Link href={`/${locale}/contact`} className="mt-7 inline-flex min-h-12 items-center rounded-full border border-[#7b9e88] px-6 py-3 text-sm font-semibold hover:bg-white/10">{t.nav.contact} ↗</Link>
+
+    <section className="section-gap border-t border-[#DFE7E2] bg-white">
+      <div className="container-width">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <p className="kicker">{u.propertiesEyebrow}</p>
+            <h2 className="section-heading mt-4">{u.featuredHeading}</h2>
+            <p className="mt-3 max-w-[620px] text-[14px] leading-7 text-[#5A7277] md:text-[16px]">{u.featuredCopy}</p>
+          </div>
+          <Link href={`/${locale}/properties`} className="soft-link">
+            {u.viewAll}
+            <Arrow/>
+          </Link>
+        </div>
+        {properties.length ? <div className="mt-9 grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {properties.slice(0,3).map(property=><PropertyCard key={property.id} property={property} locale={locale}/>)}
+        </div> : <div className="surface-panel mt-9 px-5 py-12 text-center text-[#59757B]">{u.empty}</div>}
+        <p className="preview-note mt-5">{u.disclaimer}</p>
+      </div>
+    </section>
+
+    <section className="container-width pt-12 pb-6 md:pt-20 md:pb-2">
+      <div className="relative flex flex-col gap-6 overflow-hidden rounded-[22px] bg-[#102F38] px-6 py-9 text-white md:flex-row md:items-center md:justify-between md:px-12 md:py-12">
+        <div className="pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full border border-[#4E7B81]/45"/>
+        <div className="pointer-events-none absolute -right-5 -top-16 h-52 w-52 rounded-full border border-[#4E7B81]/35"/>
+        <div className="relative">
+          <p className="kicker !text-[#A8C5BF]">{u.contactEyebrow}</p>
+          <h2 className="section-heading mt-3 text-white">{u.contactHeading}</h2>
+          <p className="mt-3 max-w-xl text-[14px] leading-7 text-[#C0D4D3]">{u.contactCopy}</p>
+        </div>
+        <Link href={`/${locale}/contact`} className="relative inline-flex min-h-12 shrink-0 items-center justify-center gap-3 self-start rounded-full bg-[#F7F6F2] px-6 py-3 text-sm font-semibold text-[#102F38] transition-transform duration-200 hover:-translate-y-0.5 md:self-auto">
+          {t.nav.contact}<Arrow/>
+        </Link>
       </div>
     </section>
   </>;

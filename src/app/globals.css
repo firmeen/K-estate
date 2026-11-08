@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
-/* KESTA V2 — Sea Current: semantic tokens, no external runtime font dependency. */
+/* KESTA V2 Deep Ocean: off-white + true navy blue, without green/teal accents. */
 :root {
   --color-background: #F7F6F2;
   --color-surface: #FFFFFF;
-  --color-deep-sea: #102F38;
-  --color-deep-sea-hover: #244D57;
-  --color-sea-glass: #A8C5BF;
-  --color-sea-mist: #DCE6E3;
-  --color-surface-muted: #EEF2EF;
-  --color-text-secondary: #526A70;
-  --color-border: #DCE4E1;
-  --color-focus: #417D89;
-  --color-muted-light: #6D8082;
+  --color-deep-sea: #071F37;
+  --color-deep-sea-hover: #0C3857;
+  --color-ocean-blue: #236589;
+  --color-ocean-mist: #D7E5ED;
+  --color-sea-glass: #B8CADC;
+  --color-sea-mist: #D7E5ED;
+  --color-surface-muted: #F0F5F8;
+  --color-text-secondary: #52687F;
+  --color-border: #DCE5EC;
+  --color-focus: #236589;
+  --color-muted-light: #6B8095;
   --font-latin: "DM Sans", "Avenir Next", "Segoe UI", Arial, sans-serif;
   --font-thai: "Noto Sans Thai", "Thonburi", "Tahoma", sans-serif;
   --font-myanmar: "Noto Sans Myanmar", "Myanmar Text", "Pyidaungsu", sans-serif;
@@ -145,7 +147,7 @@ a { text-decoration: none; }
 .property-card:focus-within a:focus-visible { outline: none; }
 .property-card__image { transition: transform 350ms var(--ease-current); }
 @media (hover: hover) and (pointer: fine) {
-  .property-card:hover { transform: translateY(-3px); border-color: var(--color-sea-glass); box-shadow: 0 14px 36px rgba(16,47,56,.075); }
+  .property-card:hover { transform: translateY(-3px); border-color: var(--color-sea-glass); box-shadow: 0 14px 36px rgba(7,31,55,.075); }
   .property-card:hover .property-card__image { transform: scale(1.02); }
 }
 .property-card:active { transform: translateY(1px); }

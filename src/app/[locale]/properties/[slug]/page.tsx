@@ -1,24 +1,49 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PropertyGallery } from "@/components/properties/property-gallery";
+import { ownerContactChannels } from "@/content/owner-contact";
 import { isLocale, locales } from "@/i18n/config";
-import { getDictionary } from "@/i18n/dictionaries";
+import { getDictionary, getUICopy } from "@/i18n/dictionaries";
 import { formatTHB } from "@/lib/utils";
 import { getPublicProperty, listPublicProperties } from "@/server/properties/service";
+import type { Property } from "@/types/property";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
-// Required to export property detail routes to GitHub Pages as static HTML.
 export async function generateStaticParams() {
   const properties = await listPublicProperties();
-  return properties.flatMap(property => locales.map(locale => ({ locale, slug: property.slug })));
+  return properties.flatMap(property => locales.map(locale => ({ locale, slug:property.slug })));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale,slug } = await params;
   if (!isLocale(locale)) return {};
   const property = await getPublicProperty(slug);
-  return { title: property?.title[locale] ?? "Property", robots: { index:false, follow:false } };
+  return { title: property?.title[locale] ?? "Property", robots:{ index:false, follow:false } };
+}
+
+function Specifications({ property, locale }: { property: Property; locale: "my" | "th" | "en" }) {
+  const t = getDictionary(locale);
+  const ui = getUICopy(locale);
+  const rows = [
+    [ui.detailType,t.types[property.type]],
+    [ui.detailListing,property.listingMode === "sale" ? ui.forSale : ui.forRent],
+    [ui.detailArea,`${property.areaSqm.toLocaleString("en-US")} m²`],
+    ...(property.landAreaSqm !== undefined && property.type === "house" ? [[ui.detailLand,`${property.landAreaSqm.toLocaleString("en-US")} m²`]] : []),
+    ...(property.floor !== undefined && property.type === "condo" ? [[ui.detailFloor,String(property.floor)]] : []),
+    ...(property.type !== "land" && property.bedrooms !== undefined && property.bedrooms > 0 ? [[ui.detailBed,String(property.bedrooms)]] : []),
+    ...(property.type !== "land" && property.bathrooms !== undefined && property.bathrooms > 0 ? [[ui.detailBath,String(property.bathrooms)]] : []),
+  ];
+  return <section className="mt-9" aria-labelledby="property-specifications">
+    <h2 id="property-specifications" className="section-title">{ui.detailDetails}</h2>
+    <dl className="mt-4 grid grid-cols-2 gap-x-6 border-t border-[var(--color-border)] sm:grid-cols-3">
+      {rows.map(([label,value]) => <div key={label} className="min-w-0 border-b border-[var(--color-border)] py-4">
+        <dt className="text-xs leading-6 text-[var(--color-text-secondary)]">{label}</dt>
+        <dd className="mt-1 break-words text-[.94rem] font-medium leading-7">{value}</dd>
+      </div>)}
+    </dl>
+  </section>;
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
@@ -26,50 +51,60 @@ export default async function PropertyDetailPage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const property = await getPublicProperty(slug);
   if (!property) notFound();
+  const ui = getUICopy(locale);
   const t = getDictionary(locale);
+  const isRent = property.listingMode === "rent";
 
-  return <article className="container-width py-12 pb-24 md:py-20">
-    <nav aria-label="Breadcrumb">
-      <Link href={`/${locale}/properties`} className="inline-flex min-h-11 items-center text-sm font-semibold text-[#678872] hover:underline">← {t.common.back}</Link>
+  return <article className="container-width pt-7 pb-10 md:pt-10 md:pb-20">
+    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-[.82rem] text-[var(--color-text-secondary)]">
+      <Link href={`/${locale}/properties`} className="inline-flex min-h-11 items-center hover:text-[var(--color-deep-sea)]">{ui.detailBack}</Link>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page" className="max-w-[60vw] truncate text-[var(--color-deep-sea)]">{property.title[locale]}</span>
     </nav>
-    <p className="eyebrow mt-5">{t.types[property.type]} · {property.location[locale]}</p>
-    <div className="mt-4 flex flex-wrap items-end justify-between gap-5">
-      <h1 className="page-heading max-w-3xl">{property.title[locale]}</h1>
-      <div>
-        <div className="text-xs font-medium uppercase tracking-wider text-[#799080]">{property.listingMode === "sale" ? t.common.sale : t.common.rent}</div>
-        <p className="mt-1 text-3xl font-semibold text-[#194732]">{formatTHB(property.priceTHB)}
-          {property.listingMode === "rent" && <span className="text-sm font-normal text-[#698374]">{t.common.perMonth}</span>}
+
+    <header className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+      <div className="max-w-[750px]">
+        <p className="eyebrow">{t.types[property.type]} · {isRent ? ui.forRent : ui.forSale}</p>
+        <h1 className="page-title mt-2">{property.title[locale]}</h1>
+        <p className="mt-2 text-[.94rem] text-[var(--color-text-secondary)]">
+          {property.district?.[locale] ? `${property.district[locale]} · ` : ""}{property.location[locale]} · {t.common.thailand}
         </p>
       </div>
-    </div>
-
-    <div className="property-placeholder mt-8 min-h-[280px] rounded-2xl md:min-h-[480px]"><span>DEMO PROPERTY · NO PHOTOS PROVIDED</span></div>
-
-    <div className="mt-10 grid gap-9 md:grid-cols-[1.5fr_1fr]">
-      <div>
-        <h2 className="text-2xl font-semibold">{t.detail.overview}</h2>
-        <p className="mt-4 leading-8 text-[#637568]">{property.description[locale]}</p>
-
-        <h2 className="mt-9 text-xl font-semibold">{t.catalog.location}</h2>
-        <p className="mt-3 text-[#637568]">{property.location[locale]} · {t.common.thailand}</p>
-        <div className="mt-5 rounded-xl border border-[#dde5dd] bg-[#edf2ed] p-5">
-          <dl className="grid gap-5 sm:grid-cols-2">
-            <div><dt className="text-xs text-[#6e8070]">{t.common.area}</dt><dd className="mt-1 text-2xl font-semibold">{property.areaSqm.toLocaleString("en-US")} m²</dd></div>
-            <div><dt className="text-xs text-[#6e8070]">{t.catalog.type}</dt><dd className="mt-1 text-lg font-semibold">{t.types[property.type]}</dd></div>
-          </dl>
-        </div>
-        <div className="notice mt-8">{t.detail.notice}</div>
+      <div className="shrink-0 md:text-right">
+        <p className="text-xs font-medium text-[var(--color-text-secondary)]">{ui.detailPrice}</p>
+        <p className="mt-1 text-[1.8rem] font-semibold leading-tight tracking-tight md:text-[2.1rem]">{formatTHB(property.priceTHB)}
+          {isRent && <span className="ml-1 whitespace-nowrap text-[.8rem] font-normal tracking-normal text-[var(--color-text-secondary)]">{ui.perMonth}</span>}
+        </p>
       </div>
-      <aside className="h-fit rounded-2xl border border-[#e0e8df] bg-white p-7 md:sticky md:top-28">
-        <h2 className="text-lg font-semibold">{t.detail.features}</h2>
-        <dl className="mt-5 space-y-4 text-sm">
-          <div className="flex justify-between gap-4"><dt className="text-[#718174]">{t.catalog.type}</dt><dd className="font-semibold">{t.types[property.type]}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-[#718174]">{t.common.area}</dt><dd className="font-semibold">{property.areaSqm} m²</dd></div>
-          {property.bedrooms !== undefined && <div className="flex justify-between gap-4"><dt className="text-[#718174]">{t.common.bedrooms}</dt><dd className="font-semibold">{property.bedrooms}</dd></div>}
-          {property.bathrooms !== undefined && <div className="flex justify-between gap-4"><dt className="text-[#718174]">{t.common.bathrooms}</dt><dd className="font-semibold">{property.bathrooms}</dd></div>}
-        </dl>
-        <p className="mt-8 text-xs leading-6 text-[#748479]">{t.detail.inquiry}</p>
-        <Link href={`/${locale}/contact`} className="button-primary mt-5 w-full">{t.common.getInTouch} ↗</Link>
+    </header>
+
+    <PropertyGallery images={property.images} title={property.title[locale]} locale={locale}/>
+
+    <div className="mt-9 grid gap-10 md:mt-12 md:grid-cols-[minmax(0,1.65fr)_minmax(270px,1fr)] md:gap-14">
+      <div className="min-w-0">
+        <section aria-labelledby="property-overview">
+          <h2 id="property-overview" className="section-title">{ui.detailOverview}</h2>
+          <p className="body-copy mt-4 whitespace-pre-line text-[.96rem]">{property.description[locale]}</p>
+        </section>
+        <section className="mt-9 border-t border-[var(--color-border)] pt-7" aria-labelledby="property-location">
+          <h2 id="property-location" className="section-title">{ui.detailLocation}</h2>
+          <p className="body-copy mt-3 text-[.96rem]">
+            {property.district?.[locale] ? `${property.district[locale]}, ` : ""}{property.location[locale]}, {t.common.thailand}
+          </p>
+        </section>
+        <Specifications property={property} locale={locale}/>
+        {property.isDemo && <div className="notice mt-8">{ui.demoNote}</div>}
+      </div>
+
+      <aside className="h-fit rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:sticky md:top-[100px] md:p-7">
+        <p className="eyebrow">{ui.detailContact}</p>
+        <h2 className="mt-3 text-xl font-medium leading-[1.55]">{property.title[locale]}</h2>
+        <p className="mt-2 text-[.83rem] text-[var(--color-text-secondary)]">{ui.reference}: {property.id}</p>
+        <div className="mt-6 border-t border-[var(--color-border)] pt-5">
+          {ownerContactChannels.length
+            ? <Link href={`/${locale}/contact`} className="button-primary w-full">{ui.detailContact} <span aria-hidden="true">↗</span></Link>
+            : <p className="text-[.88rem] leading-7 text-[var(--color-text-secondary)]">{ui.detailContactUnavailable}</p>}
+        </div>
       </aside>
     </div>
   </article>;

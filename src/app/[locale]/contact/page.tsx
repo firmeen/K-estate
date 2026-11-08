@@ -1,38 +1,48 @@
 import { notFound } from "next/navigation";
 import { ownerContactChannels } from "@/content/owner-contact";
 import { isLocale } from "@/i18n/config";
-import { getDictionary } from "@/i18n/dictionaries";
+import { getUICopy } from "@/i18n/dictionaries";
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const t = getDictionary(locale);
-  return <div className="container-width py-14 md:py-24">
-    <div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:gap-16">
-      <div>
-        <p className="eyebrow">{t.contact.eyebrow}</p>
-        <h1 className="page-heading mt-5 max-w-3xl">{t.contact.title}</h1>
-        <p className="mt-7 max-w-xl text-lg leading-9 text-[#65796b]">{t.contact.text}</p>
-      </div>
-      <div className="h-fit rounded-2xl border border-[#dfe8dd] bg-white p-6 shadow-[0_18px_50px_#17342d0a] md:p-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#e9f1e8] text-[#275742]">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-              <path d="M20 11.3c0 4.7-3.6 8.2-8.3 8.2-1.3 0-2.5-.2-3.5-.7L4 20l1.2-4.1A8.2 8.2 0 1 1 20 11.3Z"/>
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold">{t.nav.contact}</h2>
-        </div>
-        {ownerContactChannels.length ? <div className="mt-7 space-y-3">
-          {ownerContactChannels.map(channel => (
-            <a key={channel.id} href={channel.href} target={channel.href.startsWith("http") ? "_blank" : undefined}
-              rel={channel.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              className="flex min-h-[58px] items-center justify-between gap-3 rounded-xl border border-[#d9e5db] px-5 font-semibold text-[#18442f] transition-colors hover:bg-[#eff5ee]">
-              <span>{channel.label}</span><span aria-hidden="true">↗</span>
-            </a>
-          ))}
-        </div> : <div className="notice mt-6 leading-7">{t.contact.note}</div>}
-      </div>
+  const ui = getUICopy(locale);
+
+  return <div className="container-width pt-12 pb-20 md:pt-20 md:pb-28">
+    <div className="grid gap-9 md:grid-cols-[1fr_.95fr] md:items-start md:gap-16">
+      <header className="sea-reveal">
+        <p className="eyebrow">{ui.contactTag}</p>
+        <h1 className="page-title mt-4 max-w-xl">{ui.contactTitle}</h1>
+        <p className="body-copy mt-5 text-base">
+          {ownerContactChannels.length ? ui.contactDesc : ui.contactEmptyDesc}
+        </p>
+      </header>
+      <section aria-label={ui.contactLink} className="rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-5 md:px-8 md:py-6">
+        {ownerContactChannels.length
+          ? <ul>
+            {ownerContactChannels.map(channel => <li key={channel.id}>
+              <a className="contact-row group" href={channel.href}
+                target={channel.href.startsWith("https://") ? "_blank" : undefined}
+                rel={channel.href.startsWith("https://") ? "noopener noreferrer" : undefined}
+                aria-label={`${ui.contactVia} ${channel.label}`}>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[var(--color-surface-muted)] text-[var(--color-deep-sea)]" aria-hidden="true">
+                  {channel.id === "phone" ? "☎" : channel.id === "email" ? "@" : "↗"}
+                </span>
+                <span className="min-w-0 flex-1 font-medium">{channel.label}</span>
+                <span className="contact-row__arrow" aria-hidden="true">↗</span>
+              </a>
+            </li>)}
+          </ul>
+          : <div className="py-3">
+              <div aria-hidden="true" className="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-[var(--color-surface-muted)] text-[var(--color-deep-sea)]">
+                <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M4 4h16v12H8l-4 4V4Z"/><path d="M8 10h8"/>
+                </svg>
+              </div>
+              <h2 className="text-xl font-medium leading-relaxed">{ui.contactEmptyTitle}</h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)]">{ui.detailContactUnavailable}</p>
+            </div>}
+      </section>
     </div>
   </div>;
 }

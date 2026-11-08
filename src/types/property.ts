@@ -21,5 +21,8 @@ export interface Property {
   bathrooms?: number;
   images: string[];
   coordinates?: { latitude: number; longitude: number };
+  district?: Localized;
+  floor?: number;
+  landAreaSqm?: number;
   isDemo: boolean;
 }

@@ -1,52 +1,60 @@
-# KESTA — Thailand properties for Myanmar visitors
+# KESTA · Minimal Property Experience
 
-A single-owner real-estate catalogue and contact website. The navigation is intentionally focused on two user jobs:
+KESTA is a **single-owner**, Myanmar-first website for viewing property information in Thailand and finding the property owner's verified public contact channels. The brand name is provisional.
 
-1. **Explore properties** — view property location, area, type, sale/rent price and details.
-2. **Contact the owner** — see verified owner-approved channels, when provided.
+## Scope
 
-**KESTA is a provisional brand name; trademark and domain availability have not been cleared.**
+1. **Property discovery:** read-only catalogue, sale/rent choice, search by title/location/description, province and property-type filters, property details, photographs (when supplied), price in THB, area and relevant specifications.
+2. **Direct contact:** only channels explicitly provided and approved by the owner (phone, Viber, Messenger, LINE or email).
 
-## Live site / deployment
-Designed for GitHub Pages at `https://firmeen.github.io/K-estate/`. The project uses Next.js static export and a conditional `basePath: "/K-estate"` in GitHub Actions. Set **Settings → Pages → Build and deployment → Source: GitHub Actions** to enable the deployment workflow.
+No sign-in, admin dashboard, booking, payment, message storage or backend.
 
-The `Deploy KESTA to GitHub Pages` workflow builds on pushes to `main`, runs `npm run check`, and publishes `out/`. Local development does not use the GitHub Pages prefix.
+## V2 design system — Sea Current
 
-## Stack
-Mirrors FLOW-info's dependency versions: Next.js 16.3.1, React 19.2.8, TypeScript 5, Tailwind CSS 4, shadcn, Base UI, Motion 13.1.0, Remix Icon.
+- **Off-White:** `#F7F6F2` · **Deep Sea:** `#102F38`
+- Sea Glass `#A8C5BF`, Sea Mist `#DCE6E3`, Ocean hover `#244D57`
+- Semantic colors, typography, spacing, focus, cards and button styles are in `src/app/globals.css`.
+- Typography: DM Sans / Noto Sans Thai / Noto Sans Myanmar **font stacks** with reliable system fallbacks. No external runtime font request. Fonts can be self-hosted later if approved assets are supplied.
+- Motion: restrained CSS hover/reveal + the already installed Motion for React for list transitions; respects reduced-motion preferences.
+- Navigation: just Properties and Contact; logo returns Home. Mobile uses a compact two-destination bottom navigation with safe-area padding.
+- Legacy `/buy`, `/rent`, and `/about` routes remain accessible but are not primary navigation items.
 
-## Local usage
+## Routes
+
+- `/` — Myanmar-first Home (also available at `/my/`)
+- `/[locale]/properties/` — searchable inventory
+- `/[locale]/properties/[slug]/` — read-only property detail
+- `/[locale]/contact/` — owner-approved contact channels
+- `/[locale]/buy/`, `/[locale]/rent/`, `/[locale]/about/` — legacy compatibility
+
+Locales: `my` (default), `th`, `en`. Locale switching maintains the current page path.
+
+## Content and authenticity
+
+- `src/content/demo-properties.ts` contains clearly labelled **fictional demo** listings. None represents actual available inventory.
+- `src/content/owner-contact.ts` is the sole location for **verified, approved public contact details**; it currently has no channels. The Contact page displays an honest unavailable state.
+- Real property photos must be explicitly supplied for their matching listings. Missing photos use a minimal fallback without pretending to show a real property.
+- `src/server/properties/service.ts` stays a static read-only data adapter. The site deliberately remains static, with no server API.
+- Preview no-index and robots protections remain in place until listings are verified.
+
+## Run
+
 ```bash
 npm ci
 npm run dev
-```
-Visit http://localhost:3000/ (Myanmar landing page) or http://localhost:3000/my/.
-
-```bash
 npm run check
 ```
-To test the GitHub Pages build locally: `GITHUB_PAGES=true npm run build` (PowerShell: `$env:GITHUB_PAGES="true"; npm run build`).
 
-## Visitor routes
-- `/` and `/my/` — Myanmar landing pages
-- `/[locale]/properties/` — catalogue, filters for sale/rent/type/province and free-text search
-- `/[locale]/properties/[slug]/` — property overview, area, price, location and contact CTA
-- `/[locale]/contact/` — verified contact channels
-- `/[locale]/buy/`, `/[locale]/rent/`, `/[locale]/about/` — legacy URLs retained but not shown as primary navigation
+Local site: `http://localhost:3000/`.
 
-Locales: `my` (default), `th`, `en`. Desktop primary nav: **Properties / Contact**. Mobile: compact bottom two-item tab bar.
+## GitHub Pages
 
-## Information source
-- `src/content/demo-properties.ts`: fictional demo data labelled as examples, **not real listings**.
-- `src/content/owner-contact.ts`: verified contact channels. This is currently empty until real information is supplied.
-- `src/server/properties/service.ts`: read-only catalogue data adapter.
+Production path: `https://firmeen.github.io/K-estate/`.
 
-## Scope
-No login, admin dashboard, reservations, payment processing, image uploads or live database. Those are explicitly deferred. GitHub Pages is static hosting, so future dynamic server-side features would require a separate backend or a new host.
+`next.config.ts` preserves `output: "export"`, trailing slashes, and the conditional `/K-estate` base path when `GITHUB_PAGES=true`. For root-local property imagery, the same configuration exposes `NEXT_PUBLIC_BASE_PATH` during the build.
 
-## Before launching publicly
-- Replace mock inventory and placeholder imagery with verified owner-provided records, images and precise location details.
-- Obtain owner-approved phone/Viber/Messenger/LINE URLs or other channels and populate `src/content/owner-contact.ts`.
-- Have native Myanmar speakers check wording and readability; test on real mobile devices.
-- Review brand availability, accessibility, legal disclosures and appropriate foreign-property ownership claims.
-- Replace preview-only `robots` noindex/disallow restrictions after actual content is approved.
+Existing GitHub Actions workflows and repository settings are unchanged by V2.
+
+## Release checklist
+
+Replace fictional inventory, review property types/units, attach owner-provided photographs, confirm public contact channels, verify native Myanmar/Thai copy, test small-screen Safari and laptop layouts, check keyboard/reduced-motion behavior, confirm performance, and clear brand/trademark decisions before removing preview no-index restrictions.

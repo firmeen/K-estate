@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
   images: { unoptimized: true },
+  env: { NEXT_PUBLIC_BASE_PATH: isGitHubPages ? "/K-estate" : "" },
   ...(isGitHubPages ? { basePath: "/K-estate" } : {}),
 };
 
